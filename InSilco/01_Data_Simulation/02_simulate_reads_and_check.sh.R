@@ -1,3 +1,4 @@
+set -euo pipefail
 
 # ==============================================================================
 # Script: 02_simulate_reads_and_check.sh
@@ -52,6 +53,7 @@ mkdir -p "$STAR_INDEX"
 STAR \
 --runThreadN 40 \
 --runMode genomeGenerate \
+    --limitGenomeGenerateRAM "${STAR_INDEX_RAM:-100000000000}" \
 --genomeDir "$STAR_INDEX" \
 --genomeFastaFiles "$GENOME" \
 --sjdbGTFfile "$GTF_REF90" \
@@ -86,7 +88,7 @@ ${RSEM_BIN_DIR}rsem-simulate-reads \
 "$THETA0" \
 "$total_reads" \
 "${FASTQ_DIR}/official_simulated_${depth}x_noise0.1" \
---seed 18 \
+--seed "${SIM_SEED:-18}" \
 > "${LOG_DIR}/simulate_${depth}x.log" 2>&1
 done
 

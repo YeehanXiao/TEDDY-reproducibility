@@ -41,7 +41,7 @@ workflow AlignSimulationReads {
     call BuildBamIndex {
       input:
         sampleName = sample,
-        bampath = SortBam.sortbam_dir,
+        bampath = SortBam.sorted_bam_dir,
         picard_jar = picard_jar
     }
   }
@@ -122,7 +122,7 @@ task SortBam {
 
   output {
     File sorted_bam = "~{sortbam_dir}/~{sampleName}.bam"
-    String sortbam_dir = sortbam_dir
+    String sorted_bam_dir = sortbam_dir
   }
 }
 

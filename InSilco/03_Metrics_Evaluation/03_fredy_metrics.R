@@ -27,7 +27,7 @@ dir.create(outbase, recursive = TRUE, showWarnings = FALSE)
 depths <- c("5x", "10x", "25x", "50x", "100x")
 depth_dir_tbl <- tibble(
   depth = depths,
-  fredy_dir = c("5x_test", "10x", "25x", "50x", "100x") 
+  fredy_dir = depths
 )
 
 min_te_fraction <- 0.5
@@ -36,57 +36,59 @@ min_te_fraction <- 0.5
 # 1. Map FREDY predictions to 90% reference genes
 # ------------------------------------------------------------------------------
 message("--- Step 1: Mapping FREDY predictions to reference genes ---")
-ref <- import(file.path(truth_dir, "official_simulated_reference_90pct.gtf"))
-ref_gene <- ref[ref$type == "gene"]
+truth_gtf <- import(file.path(truth_dir, "official_simulated_truth_1000_transcripts.gtf"))
+sim_exon <- truth_gtf[truth_gtf$type == "exon"]
 
 map_one_depth <- function(depth, fredy_dir) {
   message("  -> Mapping depth: ", depth)
-  chimeric_gtf <- file.path(outbase, fredy_dir, "chimeric", "chimeric.gtf")
+  chimeric_gtf <- file.path(outbase, fredy_dir, "chimeric", "protein.gtf")
   
   empty_res <- tibble(
     depth = depth, fredy_dir = fredy_dir, fredy_transcript_id = character(),
-    fredy_gene_id = character(), chimeric_event = character(), chimeric_exon_number = character(),
-    seqnames = character(), start = integer(), end = integer(), strand = character(),
     matched_gene_id = character(), matched_gene_name = character(), matched_gene_type = character(),
-    overlap_width = integer()
+    overlap_width = integer(), tied_best = logical()
   )
   
   if (!file.exists(chimeric_gtf) || file.info(chimeric_gtf)$size == 0) return(empty_res)
   
   fredy <- import(chimeric_gtf)
-  fredy_tx <- fredy[fredy$type == "transcript"]
-  if (length(fredy_tx) == 0) return(empty_res)
-  
-  hits <- findOverlaps(fredy_tx, ref_gene, ignore.strand = FALSE)
-  hit_tbl <- tibble(
-    q = queryHits(hits),
-    s = subjectHits(hits),
-    overlap_width = width(pintersect(fredy_tx[queryHits(hits)], ref_gene[subjectHits(hits)], ignore.strand = FALSE))
-  )
-  
-  tx_tbl <- tibble(
-    q = seq_along(fredy_tx), depth = depth, fredy_dir = fredy_dir,
-    fredy_transcript_id = as.character(fredy_tx$transcript_id), fredy_gene_id = as.character(fredy_tx$gene_id),
-    chimeric_event = as.character(fredy_tx$chimeric_event), chimeric_exon_number = as.character(fredy_tx$chimeric_exon_number),
-    seqnames = as.character(seqnames(fredy_tx)), start = start(fredy_tx), end = end(fredy_tx),
-    strand = as.character(strand(fredy_tx))
-  )
-  
-  if (nrow(hit_tbl) == 0) {
-    return(tx_tbl |> mutate(matched_gene_id = NA_character_, matched_gene_name = NA_character_, matched_gene_type = NA_character_, overlap_width = NA_integer_) |> select(-q))
+  fredy_exon <- fredy[fredy$type == "exon"]
+  if (length(fredy_exon) == 0) return(empty_res)
+
+  all_tx <- unique(as.character(fredy_exon$transcript_id))
+  hits <- findOverlaps(fredy_exon, sim_exon, ignore.strand = FALSE)
+
+  if (length(hits) == 0) {
+    return(tibble(
+      depth = depth, fredy_dir = fredy_dir, fredy_transcript_id = all_tx,
+      matched_gene_id = NA_character_, matched_gene_name = NA_character_,
+      matched_gene_type = NA_character_, overlap_width = NA_integer_, tied_best = FALSE
+    ))
   }
   
-  best_hit <- hit_tbl |>
-    mutate(
-      matched_gene_id = as.character(ref_gene$gene_id[s]),
-      matched_gene_name = as.character(ref_gene$gene_name[s]),
-      matched_gene_type = as.character(ref_gene$gene_type[s])
-    ) |>
-    arrange(q, desc(overlap_width)) |>
-    group_by(q) |> slice_head(n = 1) |> ungroup() |>
-    select(q, matched_gene_id, matched_gene_name, matched_gene_type, overlap_width)
-  
-  tx_tbl |> left_join(best_hit, by = "q") |> select(-q)
+  hit_tbl <- tibble(
+    fredy_transcript_id = as.character(fredy_exon$transcript_id[queryHits(hits)]),
+    matched_gene_id = as.character(sim_exon$gene_id[subjectHits(hits)]),
+    matched_gene_name = trimws(as.character(sim_exon$gene_name[subjectHits(hits)])),
+    matched_gene_type = as.character(sim_exon$gene_type[subjectHits(hits)]),
+    overlap_width = width(pintersect(
+      fredy_exon[queryHits(hits)], sim_exon[subjectHits(hits)], ignore.strand = FALSE
+    ))
+  ) |>
+    filter(!is.na(matched_gene_name), matched_gene_name != "") |>
+    group_by(fredy_transcript_id, matched_gene_id, matched_gene_name, matched_gene_type) |>
+    summarise(overlap_width = sum(overlap_width), .groups = "drop") |>
+    group_by(fredy_transcript_id) |>
+    mutate(tied_best = sum(overlap_width == max(overlap_width)) > 1L) |>
+    arrange(desc(overlap_width), matched_gene_name, .by_group = TRUE) |>
+    slice_head(n = 1) |>
+    ungroup()
+
+  tibble(
+    depth = depth, fredy_dir = fredy_dir, fredy_transcript_id = all_tx
+  ) |>
+    left_join(hit_tbl, by = "fredy_transcript_id") |>
+    mutate(tied_best = coalesce(tied_best, FALSE))
 }
 
 fredy_tx_gene_map <- purrr::map2_dfr(depth_dir_tbl$depth, depth_dir_tbl$fredy_dir, map_one_depth)
@@ -111,11 +113,7 @@ pred_gene_by_depth <- fredy_tx_gene_map_final |>
 # ------------------------------------------------------------------------------
 message("--- Step 2: Building FREDY50 Truth Table (>50% overlap) ---")
 
-truth_gtf <- import(file.path(truth_dir, "official_simulated_truth_1000_transcripts.gtf"))
-sim_exon <- truth_gtf[truth_gtf$type == "exon"]
-
 te <- readRDS(file.path(data_dir, "mm10_TE.rds"))
-# 注意：如果 NCBI_check 是你的自定义函数，请确保环境里已加载该函数
 if(exists("NCBI_check")) te <- NCBI_check(te, ncbi_style = FALSE)
 
 common_seq <- intersect(seqlevels(sim_exon), seqlevels(te))
@@ -234,7 +232,7 @@ eval_one_depth <- function(depth_i) {
   
   pred_detail <- fredy_tx_gene_map_final |>
     filter(depth == depth_i, mapping_status == "mapped_to_reference_gene") |>
-    transmute(gene_name = pred_gene, fredy_transcript_id, fredy_gene_id, chimeric_event, chimeric_exon_number, overlap_width) |>
+    transmute(gene_name = pred_gene, fredy_transcript_id, overlap_width, tied_best) |>
     distinct()
   
   tp_gene_detail <- tp_gene |> left_join(truth_gene_expr_detail_FREDY50, by = "gene_name") |> left_join(pred_detail, by = "gene_name") |> arrange(desc(max_TPM))

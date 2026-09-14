@@ -1,0 +1,352 @@
+#!/usr/bin/env bash
+
+# Bash pragmas
+set -o errexit
+set -o pipefail
+set -o nounset
+
+# Where I am
+BIN_DIR="$(cd $(dirname $(readlink -f "${BASH_SOURCE[0]}")) && pwd)"
+
+# Load common lib
+source "$BIN_DIR/../lib/fredy_common"
+
+# My name
+SCRIPT_NAME="${0##*/}"
+
+# Command name
+CMD_NAME="${SCRIPT_NAME#${PROG_NAME}_}"
+
+# Dep files: string
+STRING_MERGE_GTF="string/merge.gtf"
+
+usage() {
+	local name_space=$(echo "$PROG_NAME $CMD_NAME" | tr '[:alnum:]' ' ')
+
+	echo "$PROG_NAME $VERSION"
+	echo "$PROG_NAME $CMD_NAME (aka $SCRIPT_NAME)"
+	echo ""
+	echo "Usage: $PROG_NAME $CMD_NAME [-h] [-T DIR] [-r] [-R] -o DIR"
+	echo "       $name_space -a FILE -g FILE -e FILE"
+	echo ""
+	echo "Mandatory Options:"
+	echo "  -o, --output-dir       Output directory which must have been"
+	echo "                         created in the previous steps"
+	echo "  -a, --annotation       Gene annotation for the reference"
+	echo "                         transcriptome in GTF format"
+	echo "  -g, --genome           FASTA file of the reference genome,"
+	echo "                         which is the same file used for reads"
+	echo "                         alignment using STAR"
+	echo "  -e, --stringtie-out    StringTie2 output events file in BED4"
+	echo "                         format"
+	echo ""
+	echo "Options:"
+	echo "  -h, --help             Print this help"
+	echo "  -T, --temp-dir         Use DIR for temporaries [default: $temp_dir]"
+	echo "  -r, --reciprocal       Criteria for identifying chimeric events"
+	echo "                         is 50% overlap of the event with the exon"
+	echo "                         and 50% overlap of the exon with the event"
+	echo "  -R, --irreciprocal     Criteria for identifying chimeric events"
+	echo "                         is 50% overlap of the event with the exon"
+	echo "                         [default]"
+	echo ""
+}
+
+validate_opt() {
+	# Mandatory options '-o', '-g', '-G' and '-i'
+	if [[ -z "$output_dir" ]]; then
+		try_help_and_die "Missing '-o' option"
+	elif [[ ! -d "$output_dir" ]]; then
+		error "No such dir '$output_dir'.\nStart" \
+			"your analysis from '$PROG_NAME string'"
+	fi
+
+	if [[ -z "$gtf" ]]; then
+		try_help_and_die "Missing '-a' option"
+	elif [[ ! -f "$gtf" ]]; then
+		error "No such file '$gtf'"
+	fi
+
+	if [[ -z "$genome" ]]; then
+		try_help_and_die "Missing '-g' option"
+	elif [[ ! -f "$genome" ]]; then
+		error "No such file '$genome'"
+	fi
+
+	if [[ -z "$input" ]]; then
+		try_help_and_die "Missing '-e' option"
+	elif [[ ! -f "$input" ]]; then
+		error "No such file '$input'"
+	fi
+
+	# Options
+	if [[ "$is_reciprocal" && "$is_irreciprocal" ]]; then
+		try_help_and_die "Both '-r' and '-R' are set." \
+			"You need to choose between reciprocal and" \
+			"irreciprocal criteria"
+	fi
+}
+
+validate_dep() {
+	# string
+	if [[ ! -f "$string_merge_gtf" ]]; then
+		error "'$string_merge_gtf' not found.\nMaybe" \
+			"you need to run '$PROG_NAME string' before"
+	fi
+}
+
+# Options
+output_dir=""
+temp_dir="/tmp"
+input="" # BED
+gtf=""
+genome=""
+is_reciprocal=
+is_irreciprocal=
+
+# Processing variables
+cod="" # Current output dir
+tdir=""
+paramet=""
+string_merge_gtf=""
+
+[[ $# -eq 0 ]] && { usage; exit; }
+
+TEMP=$(getopt \
+	-o 'hT:o:e:a:g:rR' \
+	--long 'help,temp-dir:,output-dir:,stringtie-out:,annotation:,
+		genome:,reciprocal,irreciprocal' \
+	-n "$PROG_NAME $CMD_NAME" -- "$@") \
+	|| try_help_and_die
+
+eval set -- "$TEMP"
+unset TEMP
+
+while true; do
+	case "$1" in
+		-h|--help)
+			usage
+			exit
+			;;
+		-T|--temp-dir)
+			temp_dir="$2"
+			shift 2
+			;;
+		-o|--output-dir)
+			output_dir="$2"
+			shift 2
+			;;
+		-e|--stringtie-out)
+			input="$2"
+			shift 2
+			;;
+		-a|--annotation)
+			gtf="$2"
+			shift 2
+			;;
+		-g|--genome)
+			genome="$2"
+			shift 2
+			;;
+		-r|--reciprocal)
+			is_reciprocal=1
+			shift
+			;;
+		-R|--irreciprocal)
+			is_irreciprocal=1
+			shift
+			;;
+		--)
+			shift
+			break
+			;;
+		*)
+			error "Internal error!"
+			;;
+	esac
+done
+
+# Default value is '--irreciprocal'
+if [[ -z "$is_reciprocal" && -z "$is_irreciprocal" ]]; then
+	is_irreciprocal=1
+fi
+
+# Check for errors in opt
+validate_opt
+
+# Set the dep files paths
+string_merge_gtf="$output_dir/$STRING_MERGE_GTF"
+
+# Check for errors in dep
+validate_dep
+
+# MAIN
+
+if [[ "$is_reciprocal" ]]; then
+	paramet='-r'
+fi
+
+# Output dir concerning this command
+cod="$output_dir/$CMD_NAME"
+
+# Create the base
+mkdir -p "$cod"
+
+# Create a temp dir
+tdir=$(mktemp -d --tmpdir="$temp_dir")
+
+# Remove it automagicly
+trap 'rm -rf "$tdir"' EXIT
+
+log_info 'Finding new transcripts'
+
+# Dicionário de protein codings
+log_info "Generate '$tdir/dic.txt'"
+awk '{if ($3 == "CDS") print $10}' "$gtf" \
+	| sed 's/;\|"//g' \
+	| cut -d . -f 1 \
+	| sort -u \
+	| fgrep -f - "$string_merge_gtf" \
+	| awk -F'"' '{print $2}' \
+	| sort -u \
+	| cut -d . -f 1 > "$tdir/dic.txt"
+
+#Filtro de transcritos anotados
+log_info "Generate '$cod/novels.gtf'"
+cat "$string_merge_gtf" > "$cod/novels.gtf"
+
+#Pegando os exons dos novos transcritos
+log_info "Generate '$tdir/novels_exon.bed'"
+awk -F "\t" '{if ($3 == "exon" && $1 ~/chr/) print $1"\t"$4"\t"$5"\t"$9}' \
+	"$cod/novels.gtf" \
+	| sort -k1,1 -k2,2n \
+	> "$tdir/novels_exon.bed"
+
+#Lista dos transcritos novos que tem RTC
+log_info 'Finding chimeric transcripts'
+
+log_info "Generate '$cod/chimeric.txt'"
+bedtools intersect $paramet -sorted -f 0.5 -wo \
+	-a "$input" \
+	-b "$tdir/novels_exon.bed" \
+	| cut -f 4,8 \
+	| awk -v OFS="\t" '{print $5,$7,"\""$1"\""}' \
+	| sed 's/"\|;//g' \
+	| sort -u \
+	| awk -v OFS="\t" '{print $1,$2,$2,$3}' \
+	| sort -k1,1 -k2,2n \
+	| bedtools merge -o collapse -i - -c 4 \
+	| awk -v OFS="\t" '{if ($3-$2==2) print $1,$2+1,$NF; else if ($3-$2<2) print $1,$2,$NF}' \
+	> "$cod/chimeric.txt"
+
+#Montando um gtf dos transcritos novos anotados pelo stringtie
+log_info "Generate '$cod/protein.gtf'"
+fgrep -w \
+	-f <(cut -f 1 "$cod/chimeric.txt") \
+	"$string_merge_gtf" \
+	> "$cod/protein.gtf"
+
+#Montando um gtf e um bed com possiveis transcritos quiméricos
+log_info "Done: all-transcript TE50 pre-CDS sensitivity mode"
+exit 0
+
+log_info "Generate '$tdir/chimeric_dic.gtf'"
+grep -w \
+	-f "$tdir/dic.txt" \
+	"$cod/protein.gtf" \
+	> "$tdir/chimeric_dic.gtf"
+
+log_info "Generate '$tdir/exon.bed'"
+grep -w exon \
+	"$tdir/chimeric_dic.gtf" \
+	| cut -f 1,4,5,9 \
+	| sort -k1,1 -k2,2n \
+	> "$tdir/exon.bed"
+
+#Criando um bed com todos os transcritos ja anotados de protein_coding
+log_info "Generate '$tdir/partial.tsv'"
+awk '{if ($3 == "CDS") print $12}' "$gtf" \
+	| sed 's/;\|"//g' \
+	| sort -u \
+	| fgrep -wf - "$gtf" \
+	| awk '{if ($3 == "exon") print}' \
+	| cut -f 1,4,5,9 \
+	| sort -k1,1 -k2,2n \
+	| bedtools intersect -wo -sorted -a "$tdir/exon.bed" -b - \
+	| cut -f 4,8 \
+	| awk -F '"' '{print $4"\t"$8"\t"$10}' \
+	| sort \
+	| uniq -c \
+	| sort -k2,2 -k1,1r \
+	> "$tdir/partial.tsv"
+
+> "$cod/most_shared.tsv"
+log_info "Generate '$cod/most_shared.tsv'"
+fgrep MSTRG "$tdir/partial.tsv" \
+	| awk -v OFS="\t" '{if ($1 > 1) print $1,$2,$3,$4}' \
+	| sort -k2,2 -k1,1nr \
+	| awk '!D[$2]++' \
+	| awk '{print $1,$2}' \
+	| fgrep -wf - "$tdir/partial.tsv" \
+	| awk -F" " '{print $2"\t"$3"\t"$4}' \
+	> "$cod/most_shared.tsv"
+
+log_info "Generate '$tdir/chimeric.gtf'"
+fgrep -w \
+	-f <(cut -f 1 "$cod/most_shared.tsv" | sort -u) \
+	"$cod/protein.gtf" \
+	> "$tdir/chimeric.gtf"
+
+#Classificando internal initial e final
+log_info "Generate '$tdir/info_bed_novel.txt'"
+python3 "$BIN_DIR/../$SCRIPTS_PYTHON/bed_novel.py" \
+	"$tdir/chimeric.gtf" \
+	> "$tdir/info_bed_novel.txt" \
+	|| log_error "'bed_novel.py' failed"
+
+log_info "Generate '$tdir/joined.txt'"
+sed 's/\\//g' "$cod/chimeric.txt" \
+	> "$tdir/joined.txt"
+
+log_info "Generate '$tdir/info.tsv'"
+join \
+	<(sort -k1,1 -k2,2n "$tdir/info_bed_novel.txt") \
+	<(sort -k1,1 -k2,2n "$tdir/joined.txt") \
+	| awk -F " " '{if ($3 == $4 && $2 == "+") print $1"\t"$2"\t"$3"\t"$4"\tNovel Final"; else if ($3 == $4 && $2 == "-") print $1"\t"$2"\t"$3"\t"$4"\tNovel Initial"; else if ($4 == 1 && $2 == "+") print $1"\t"$2"\t"$3"\t"$4"\tNovel Initial"; else if ($4 == 1 && $2 == "-") print $1"\t"$2"\t"$3"\t"$4"\tNovel Final"; else print $1"\t"$2"\t"$3"\t"$4"\tNovel Internal"}' \
+	> "$tdir/info.tsv"
+
+log_info "Generate '$cod/info.tsv'"
+awk 'NR==FNR{v[$1]++;u[$1$4]++;next} v[$1]==1 || u[$1$4]>1' \
+	"$tdir/info.tsv" "$tdir/info.tsv" > "$cod/info.tsv"
+#grep -v \
+	#-f <(cut -f 1 "$tdir/info.tsv" | uniq -c | awk '{if ($1 > 1) print $2}') \
+	#"$tdir/info.tsv" \
+	#> "$cod/info.tsv"
+
+#log_info "Append to '$cod/info.tsv'"
+#grep \
+	#-f <(cut -f 1,4 "$tdir/info.tsv" | uniq -c | awk '{if ($1 > 1) print $2}') \
+	#"$tdir/info.tsv" \
+	#>> "$cod/info.tsv"
+
+log_info "Generate '$cod/chimeric.gtf'"
+cut -f 1 "$cod/info.tsv" \
+	| fgrep -wf - "$tdir/chimeric.gtf" \
+	| awk -F \" '{print $4"\t"$0}' \
+	| sort -k1,1 -k4,4r \
+	| join - <(sort -k1,1 "$cod/chimeric.txt") \
+	| awk -v OFS="\t" -F ' ' '{if ($4 == "transcript") print $2,$3,$4,$5,$6,$7,$8,$9,$10" "$11" "$12" "$13" chimeric_event \""$15"\"; chimeric_exon_number \""$14"\";"; else print$2,$3,$4,$5,$6,$7,$8,$9,$10" "$11" "$12" "$13" "$14" "$15}' \
+	> "$cod/chimeric.gtf"
+
+#Arquivo fasta dos possiveis transcritos quimericos do stringtie
+log_info "Generate '$cod/chimeric.fasta'"
+gffread "$cod/chimeric.gtf" \
+	-g "$genome" \
+	-w "$cod/chimeric.fasta" \
+	2> "$cod/chimeric.fasta.log" \
+	|| log_error \
+		"gffread failed:" \
+		"See '$(readlink -f "$cod/chimeric.fasta.log")'" \
+		"for more details"
+
+log_info "Done"

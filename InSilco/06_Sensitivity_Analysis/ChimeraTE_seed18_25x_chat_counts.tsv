@@ -1,0 +1,9 @@
+seed	depth	configuration	MAPQ_threshold	read_TE_overlap_threshold	strand_mode	TE_exonized_rows	TE_initiated_rows	TE_terminated_rows	counting_unit	provenance	verification_status
+18	25x	default	255	0.50	fwd-stranded	8	0	1	raw_output_TSV_rows	user_posted_chat_2026-09-02	pending_comparison_with_original_server_TSV
+18	25x	default	255	0.50	rf-stranded	7	0	1	raw_output_TSV_rows	user_posted_chat_2026-09-02	pending_comparison_with_original_server_TSV
+18	25x	multimap	0	0.50	fwd-stranded	8	0	1	raw_output_TSV_rows	user_posted_chat_2026-09-02	pending_comparison_with_original_server_TSV
+18	25x	multimap	0	0.50	rf-stranded	7	0	1	raw_output_TSV_rows	user_posted_chat_2026-09-02	pending_comparison_with_original_server_TSV
+18	25x	overlap10	255	0.10	fwd-stranded	17	1	1	raw_output_TSV_rows	user_posted_chat_2026-09-02	pending_comparison_with_original_server_TSV
+18	25x	overlap10	255	0.10	rf-stranded	21	2	2	raw_output_TSV_rows	user_posted_chat_2026-09-02	pending_comparison_with_original_server_TSV
+18	25x	both_relaxed	0	0.10	fwd-stranded	17	1	1	raw_output_TSV_rows	user_posted_chat_2026-09-02	pending_comparison_with_original_server_TSV
+18	25x	both_relaxed	0	0.10	rf-stranded	21	2	2	raw_output_TSV_rows	user_posted_chat_2026-09-02	pending_comparison_with_original_server_TSV

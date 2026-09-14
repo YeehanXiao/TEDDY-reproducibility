@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
 # ==============================================================================
 # Script: 06_run_teprof2.sh
 # Purpose: 
@@ -19,6 +22,10 @@ LOG_DIR="${OUTBASE}/logs"
 
 # IMPORTANT: Path to TEProf2 installation
 TEPROF2_BIN_DIR="${WORK_DIR}/software/TEProf2Paper/bin"
+TEPROF2_ADAPTER_DIR="${WORK_DIR}/InSilco/02_Tool_Execution/adapters/teprof2"
+PREPARE_DICTIONARY_INPUT="${TEPROF2_ADAPTER_DIR}/prepare_teprof2_dictionary_input.py"
+GENECODE_TO_DIC="${TEPROF2_ADAPTER_DIR}/genecode_to_dic_simulation.py"
+NORMALIZE_DICTIONARIES="${TEPROF2_ADAPTER_DIR}/normalize_teprof2_dictionaries.py"
 
 # Reference Files
 REFGTF="${RESULTS_DIR}/official_simulated_reference_90pct.gtf"
@@ -44,32 +51,61 @@ echo ">>> Step 1: Preparing TEProf2 Reference Indices..."
 
 test -s "${RMSK_BED}" || { echo "Error: Missing ${RMSK_BED}"; exit 1; }
 test -s "${RMSK_LST}" || { echo "Error: Missing ${RMSK_LST}"; exit 1; }
-test -s "${SIMGTF}" || { echo "Error: Missing ${SIMGTF}"; exit 1; }
+test -s "${REFGTF}" || { echo "Error: Missing ${REFGTF}"; exit 1; }
+test -s "${PREPARE_DICTIONARY_INPUT}" || { echo "Error: Missing ${PREPARE_DICTIONARY_INPUT}"; exit 1; }
+test -s "${GENECODE_TO_DIC}" || { echo "Error: Missing ${GENECODE_TO_DIC}"; exit 1; }
+test -s "${NORMALIZE_DICTIONARIES}" || { echo "Error: Missing ${NORMALIZE_DICTIONARIES}"; exit 1; }
 
 # Sort and index RepeatMasker BED
 sort -k1,1 -k2,2n "${RMSK_BED}" > "${REF_DIR}/rmsk_mm10_from_rds.sorted.bed"
 bgzip -f "${REF_DIR}/rmsk_mm10_from_rds.sorted.bed"
 tabix -f -p bed "${REF_DIR}/rmsk_mm10_from_rds.sorted.bed.gz"
 
-# Format GTF for TEProf2 Python 2 parser
-awk 'BEGIN{OFS="\t"} $3=="transcript" || $3=="exon" || $3=="start_codon" {print $0}' "${SIMGTF}" \
-| awk -F '; ' '{print $0"\t"$2}' \
-> "${REF_DIR}/official_simulated_reference_90pct.teprof2_input.sorted.gtf"
+# Format and validate the simulation GTF for the TEProf2 Python 2 parser.
+python3 "${PREPARE_DICTIONARY_INPUT}" \
+"${REFGTF}" \
+"${REF_DIR}/official_simulated_reference_90pct.teprof2_input.sorted.gtf"
 
 # Generate genecode dictionaries
-conda run -n "${TEPROF2_PY2_ENV}" python2 "${TEPROF2_BIN_DIR}/genecode_to_dic.py" \
-"${REF_DIR}/official_simulated_reference_90pct.teprof2_input.sorted.gtf"
+(
+cd "${REF_DIR}"
+conda run -n "${TEPROF2_PY2_ENV}" python2 "${GENECODE_TO_DIC}" \
+"official_simulated_reference_90pct.teprof2_input.sorted.gtf"
+)
 
 mv -f "${REF_DIR}/genecode_plus.dic"  "${REF_DIR}/official_simulated_reference_90pct.plus.dic"
 mv -f "${REF_DIR}/genecode_minus.dic" "${REF_DIR}/official_simulated_reference_90pct.minus.dic"
 
+conda run -n "${TEPROF2_PY2_ENV}" python2 "${NORMALIZE_DICTIONARIES}" \
+"${REF_DIR}/official_simulated_reference_90pct.plus.dic" \
+"${REF_DIR}/official_simulated_reference_90pct.minus.dic"
+
 # Write arguments configuration file
-cat > "${ARG_FILE}" <<EOF
-rmsk ${REF_DIR}/rmsk_mm10_from_rds.sorted.bed.gz
-rmskannotationfile ${RMSK_LST}
-gencodeplusdic ${REF_DIR}/official_simulated_reference_90pct.plus.dic
-gencodeminusdic ${REF_DIR}/official_simulated_reference_90pct.minus.dic
-EOF
+printf 'rmsk	%s
+rmskannotationfile	%s
+gencodeplusdic	%s
+gencodeminusdic	%s
+' \
+"${REF_DIR}/rmsk_mm10_from_rds.sorted.bed.gz" \
+"${RMSK_LST}" \
+"${REF_DIR}/official_simulated_reference_90pct.plus.dic" \
+"${REF_DIR}/official_simulated_reference_90pct.minus.dic" \
+> "${ARG_FILE}"
+
+awk -F '	' '
+NF != 2 || $1 == "" || $2 == "" {
+    print "Invalid TEProf2 argument line:", NR > "/dev/stderr"
+    bad = 1
+}
+END { exit bad }
+' "${ARG_FILE}"
+
+while IFS=$'	' read -r key path; do
+    test -s "${path}" || {
+        echo "Error: Missing ${key} reference: ${path}"
+        exit 1
+    }
+done < "${ARG_FILE}"
 
 # ------------------------------------------------------------------------------
 # 2. Environment Sanity Check
@@ -116,6 +152,11 @@ rm -f "${ASM_GTF}_annotated_test_all" "${ASM_GTF}_annotated_filtered_test_all"
 conda run -n "${TEPROF2_PY2_ENV}" python2 "${TEPROF2_BIN_DIR}/rmskhg38_annotate_gtf_update_test_tpm.py" \
 "${ASM_GTF}" "${ARG_FILE}" \
 2>&1 | tee "${OUTDIR}/logs/teprof2_annotate_${depth}.log"
+
+test -f "${ASM_GTF}_annotated_filtered_test_all" || {
+    echo "Error: TEProf2 annotation failed at ${depth}"
+    exit 1
+}
 
 echo "[DONE] ${depth}"
 done

@@ -29,11 +29,11 @@ TE_GTF="${REF_DIR}/official_simulated_TE_fake.gtf"
 MERGE_GTF="${REF_DIR}/official_simulated_mergeTE.gtf"
 
 # Tools
-ARRIBA_BIN="arriba" # 假设已加入系统环境变量，如果没有，请写绝对路径，例如 /path/to/arriba
+ARRIBA_BIN="arriba"
 STAR_BIN="STAR"
 
 # Variables
-DEPTHS=("5x" "10x" "25x" "50x" "100x") # 统一了所有测序深度
+DEPTHS=("5x" "10x" "25x" "50x" "100x")
 
 # ------------------------------------------------------------------------------
 # 1. Generate "fake" TE GTF
@@ -106,7 +106,7 @@ R1_TEST="${FASTQ_DIR}/official_simulated_100x_noise0.1.R1.fastq.gz"
 if [ -f "$R1_TEST" ]; then
 READLEN=$(zcat "${R1_TEST}" | awk 'NR==2{print length($0); exit}')
 else
-  READLEN=150 # 默认值，防报错
+  READLEN=150
 echo "Warning: R1_TEST not found. Using default READLEN=150"
 fi
 SJDB_OVERHANG=$((READLEN - 1))
@@ -139,7 +139,6 @@ rm -f "${PREFIX}Aligned.out.bam" "${PREFIX}Chimeric.out.junction" "${PREFIX}Log.
 rm -rf "${PREFIX}_STARtmp" "${PREFIX}_STARpass1" "${PREFIX}_STARgenome"
 
 # A. STAR Alignment
-# (注意：如果你需要记录时间供 99_timesummary.R 读取，可以在 STAR 前面加上 /usr/bin/time -v -o "${ARRIBA_DIR}/${depth}_arriba.time.log")
 ${STAR_BIN} --runThreadN 20 \
 --genomeDir "${STAR_INDEX}" \
 --readFilesIn "${R1}" "${R2}" \

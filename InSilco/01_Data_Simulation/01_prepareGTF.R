@@ -11,6 +11,7 @@
 suppressPackageStartupMessages({
   library(rtracklayer)
   library(GenomicRanges)
+  library(GenomeInfoDb)
   library(IRanges)
   library(dplyr)
 })
@@ -44,7 +45,7 @@ max_downstream_if_rich <- 5L
 
 filter_core_genes <- TRUE
 
-set.seed(18)
+set.seed(as.integer(Sys.getenv("SIM_SEED", "18")))
 
 # ==============================================================================
 # Generate simulated benchmark GTF from official mouse annotation
@@ -794,7 +795,7 @@ expr_pool <- old_iso %>%
   filter(!is.na(TPM), TPM >= 0) %>%
   pull(TPM)
 
-set.seed(18)
+set.seed(as.integer(Sys.getenv("SIM_SEED", "18")))
 
 sim_tpm <- sample(expr_pool, nrow(tx_map), replace = TRUE)
 

@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
 # ==============================================================================
 # Script: 05_run_fredy.sh
 # Purpose: 
@@ -23,12 +26,14 @@ REF_GTF="${BASE}/official_simulated_reference_90pct.gtf"
 STAR_INDEX="${BASE}/STAR_index_official_reference_90pct"
 
 FREDY_CDS_GTF="${REF_DIR}/official_simulated_reference_90pct.FREDY_CDSproxy.gtf"
-TE_BED="${REF_DIR}/mm10_TE.FREDY.bed4" # From 01c_prepare_fredy_ref.R
+TE_BED="${REF_DIR}/mm10_TE.FREDY.bed4" # Prepared by 04_prepare_fredy_ref.R
+FREDY_CHIMERIC="${WORK_DIR}/InSilco/02_Tool_Execution/adapters/fredy/bin/fredy_chimeric"
 
 THREADS=8
 DEPTHS=("5x" "10x" "25x" "50x" "100x")
 
 mkdir -p "${REF_DIR}"
+test -x "${FREDY_CHIMERIC}" || { echo "Error: Missing relaxed FREDY caller: ${FREDY_CHIMERIC}"; exit 1; }
 
 # ------------------------------------------------------------------------------
 # 1. Create FREDY CDS proxy GTF
@@ -81,11 +86,13 @@ for depth in "${DEPTHS[@]}"; do
     -t "${THREADS}"
 
   echo "[$(date)] FREDY chimeric: ${depth}"
-  fredy_udocker chimeric \
+  "${FREDY_CHIMERIC}" \
     -o "${out_dir}" \
     -a "${FREDY_CDS_GTF}" \
     -g "${GENOME}" \
     -e "${TE_BED}"
+
+  test -s "${out_dir}/chimeric/protein.gtf"
 
   echo "[$(date)] DONE ${depth}"
 done

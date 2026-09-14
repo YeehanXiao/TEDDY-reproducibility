@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
 
 # ==============================================================================
 # Script: 04_run_chimerate.sh
@@ -17,7 +19,8 @@ DATA_DIR="${WORK_DIR}/data"
 RESULTS_DIR="${WORK_DIR}/results"
 
 # IMPORTANT: Path to the cloned ChimeraTE repository
-CHIMERATE_DIR="${WORK_DIR}/ChimeraTE" 
+CHIMERATE_DIR="${CHIMERATE_DIR:-${WORK_DIR}/ChimeraTE}"
+CHIMERATE_SHA256="${WORK_DIR}/InSilco/02_Tool_Execution/adapters/chimerate/SHA256SUMS"
 
 OUTBASE="${RESULTS_DIR}/ChimeraTE_official_by_depth"
 
@@ -29,6 +32,12 @@ GENE_GTF="${OUTBASE}/ref/official_simulated_reference_90pct.ChimeraTE_gene_exon.
 THREADS=8
 DEPTHS=("5x" "10x" "25x" "50x" "100x")
 STRANDS=("fwd-stranded" "rf-stranded")
+
+test -s "${CHIMERATE_SHA256}" || { echo "Error: Missing ChimeraTE checksum manifest"; exit 1; }
+(cd "${CHIMERATE_DIR}" && sha256sum --check --status "${CHIMERATE_SHA256}") || {
+  echo "Error: CHIMERATE_DIR does not contain the validated benchmark fork" >&2
+  exit 1
+}
 
 mkdir -p "${OUTBASE}/ref"
 mkdir -p "${OUTBASE}/logs"
@@ -50,12 +59,7 @@ mkdir -p projects
   echo "Date: $(date)"
   echo "PWD: $(pwd)"
   echo "Python: $(python3 --version 2>&1)"
-  python3 - <<'PY'
-  import pandas as pd
-  import numpy as np
-  print("pandas:", pd.__version__)
-  print("numpy:", np.__version__)
-  PY
+  python3 -c 'import numpy, pandas; print("pandas:", pandas.__version__); print("numpy:", numpy.__version__)'
   echo "WORK_DIR=${WORK_DIR}"
   echo "OUTBASE=${OUTBASE}"
   echo "GENOME=${GENOME}"
@@ -144,13 +148,7 @@ EOF
 # 5. Patch ChimeraTE for pandas >= 2.0
 # ------------------------------------------------------------------------------
 PATCH_FILE="scripts/mode1_te_exonized.py"
-PATCH_BACKUP="scripts/mode1_te_exonized.py.before_pandas2_patch"
-
 test -s "${PATCH_FILE}" || { echo "Error: Patch file not found! Are you in the ChimeraTE directory?"; exit 1; }
-
-if [ ! -f "${PATCH_BACKUP}" ]; then
-cp "${PATCH_FILE}" "${PATCH_BACKUP}"
-fi
 
 python3 - <<'PY'
 from pathlib import Path
@@ -169,7 +167,11 @@ replacements = {
 
 for old, new in replacements.items():
   if old in s:
-  s = s.replace(old, new)
+    s = s.replace(old, new)
+
+for old, new in replacements.items():
+  if old in s or new not in s:
+    raise SystemExit("Unsupported ChimeraTE pandas API in " + str(p))
 
 p.write_text(s)
 PY
@@ -211,6 +213,7 @@ python3 chimTE_mode1.py \
 --gene "${GENE_GTF}" \
 --strand "${strand}" \
 --threads "${THREADS}" \
+--overlap 0.10 \
 > "${log_file}" 2>&1
 
 cp -r "projects/${project}" "${result_dir}"

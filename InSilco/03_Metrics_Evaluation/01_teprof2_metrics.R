@@ -64,14 +64,11 @@ truth_gene_expr_main_detail <- tx_truth_expr |>
 #    5' exon of transcript must be TE-overlap exon, then TPM > 1
 # ------------------------------------------------------------------------------
 teprof2_tx_truth <- exon_truth |>
-  mutate(
-    tx_exon_rank = as.integer(tx_exon_rank),
-    is_TE_overlap_exon = as.logical(is_TE_overlap_exon)
-  ) |>
+  mutate(is_TE_overlap_exon = as.logical(is_TE_overlap_exon)) |>
   group_by(transcript_id) |>
   filter(
-    (strand == "+" & tx_exon_rank == min(tx_exon_rank, na.rm = TRUE)) |
-      (strand == "-" & tx_exon_rank == max(tx_exon_rank, na.rm = TRUE))
+    (strand == "+" & start == min(start)) |
+      (strand == "-" & end == max(end))
   ) |>
   summarise(
     gene_name = dplyr::first(gene_name),
@@ -135,14 +132,17 @@ read_teprof2_pred_gene <- function(depth_i) {
   }
   
   x |>
+    mutate(
+      X16 = trimws(as.character(X16)),
+      X3 = trimws(as.character(X3)),
+      X16 = if_else(X16 %in% c("", "NA", "None", "."), NA_character_, X16),
+      X3 = if_else(X3 %in% c("", "NA", "None", "."), NA_character_, X3)
+    ) |>
     transmute(
       depth = depth_i,
       gene_name = dplyr::coalesce(X16, X3)
     ) |>
-    mutate(
-      gene_name = trimws(gene_name)
-    ) |>
-    filter(!is.na(gene_name), gene_name != "", gene_name != "None") |>
+    filter(!is.na(gene_name)) |>
     distinct()
 }
 
@@ -303,4 +303,3 @@ saveRDS(teprof2_metrics_teinit, file.path(benchmark_dir, "TEProf2_official_by_de
 # ------------------------------------------------------------------------------
 message("--- TEProf2 Evaluation Completed ---")
 message("Metrics saved to: ", benchmark_dir)
-

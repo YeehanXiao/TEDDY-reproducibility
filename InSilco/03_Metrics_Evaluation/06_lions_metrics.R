@@ -1,6 +1,6 @@
 # ==============================================================================
 # Script: 06_lions_metrics.R
-# Purpose: Extract LIONS predictions from log files and evaluate accuracy against
+# Purpose: Extract final LIONS predictions from .lion files and evaluate accuracy against
 #          a strict TE-initiated ground truth.
 # ==============================================================================
 
@@ -28,11 +28,11 @@ iso_truth <- read.delim(file.path(truth_dir, "official_simulated_1000.isoforms.r
 #    Rule: 5' exon of transcript must be TE-overlap exon, and TPM > 1
 # ------------------------------------------------------------------------------
 TEinitiated_tx_truth <- exon_truth |>
-  mutate(tx_exon_rank = as.integer(tx_exon_rank), is_TE_overlap_exon = as.logical(is_TE_overlap_exon)) |>
+  mutate(is_TE_overlap_exon = as.logical(is_TE_overlap_exon)) |>
   group_by(transcript_id) |>
   filter(
-    (strand == "+" & tx_exon_rank == min(tx_exon_rank, na.rm = TRUE)) |
-      (strand == "-" & tx_exon_rank == max(tx_exon_rank, na.rm = TRUE))
+    (strand == "+" & start == min(start)) |
+      (strand == "-" & end == max(end))
   ) |>
   summarise(gene_name = dplyr::first(gene_name), TEinitiated_compatible_tx = any(is_TE_overlap_exon, na.rm = TRUE), .groups = "drop")
 
@@ -60,21 +60,20 @@ truth_gene_expr_TEinitiated_detail <- TEinitiated_tx_truth_expr |>
   )
 
 # ------------------------------------------------------------------------------
-# 3. Read LIONS predictions from log
+# 3. Read final chimSort/simuOptimal LIONS predictions
 # ------------------------------------------------------------------------------
 read_lions_pred_gene <- function(depth_i) {
-  f <- file.path(outbase, depth_i, paste0("official_simulated_", depth_i, "_noise0.1.LIONS.log"))
+  f <- file.path(outbase, depth_i, paste0("official_simulated_", depth_i, "_noise0.1.lion"))
   if (!file.exists(f) || file.info(f)$size == 0) {
-    warning("Missing or empty LIONS log: ", f)
+    warning("Missing or empty LIONS output: ", f)
     return(tibble(depth = depth_i, gene_name = character()))
   }
   
-  lines <- readLines(f, warn = FALSE)
-  first_col <- vapply(strsplit(lines, "\t", fixed = TRUE), function(x) if (length(x) >= 1) x[1] else NA_character_, character(1))
-  
-  tibble(depth = depth_i, first_col = first_col) |>
-    filter(grepl(":OFFICIAL_SIMTX", first_col)) |>
-    mutate(gene_name = sub(":.*$", "", first_col), gene_name = trimws(gene_name)) |>
+  x <- read_tsv(f, show_col_types = FALSE, col_types = cols(.default = col_character()))
+  stopifnot("transcriptID" %in% names(x))
+
+  tibble(depth = depth_i, transcriptID = x$transcriptID) |>
+    mutate(gene_name = sub(":.*$", "", transcriptID), gene_name = trimws(gene_name)) |>
     filter(!is.na(gene_name), gene_name != "", gene_name != "NA", gene_name != "None") |>
     distinct(depth, gene_name)
 }

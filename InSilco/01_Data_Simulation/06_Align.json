@@ -1,19 +1,16 @@
 {
-  "runSTAR.index": "/path/to/STAR_index_official_reference_90pct",
-  "runSTAR.bamdir": "/path/to/simulation_benchmark/bam",
-  "runSTAR.samples": [
+  "AlignSimulationReads.star_index": "/path/to/STAR_index_official_reference_90pct",
+  "AlignSimulationReads.bam_dir": "/path/to/simulation_benchmark/bam",
+  "AlignSimulationReads.samples": [
     "official_simulated_5x_noise0.1",
     "official_simulated_10x_noise0.1",
     "official_simulated_25x_noise0.1",
     "official_simulated_50x_noise0.1",
     "official_simulated_100x_noise0.1"
   ],
-  "runSTAR.threads": 5,
-  "runSTAR.inputs": "/path/to/simulation_benchmark/fastq",
-  "runSTAR.GTF": "/path/to/simulation_benchmark/official_simulated_reference_90pct.gtf",
-  "runSTAR.countpath": "/path/to/simulation_benchmark/counts",
-  "runSTAR.bwpath": "/path/to/simulation_benchmark/bw",
-  "runSTAR.sortpath": "/path/to/simulation_benchmark/sortbam",
-  "runSTAR.picardpath": "/path/to/picard.jar",
-  "runSTAR.rmpath": "/path/to/simulation_benchmark/rmdup"
+  "AlignSimulationReads.threads": 5,
+  "AlignSimulationReads.fastq_dir": "/path/to/simulation_benchmark/fastq",
+  "AlignSimulationReads.sortbam_dir": "/path/to/simulation_benchmark/sortbam",
+  "AlignSimulationReads.picard_jar": "/path/to/picard.jar",
+  "AlignSimulationReads.rmdup_dir": "/path/to/simulation_benchmark/rmdup"
 }
