@@ -3,6 +3,8 @@
 .Rhistory
 .RData
 .Rproj.user/
+__pycache__/
+*.py[cod]
 *.bam
 *.fastq
 *.fastq.gz

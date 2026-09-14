@@ -1,0 +1,6 @@
+Method	Analysis	Genes/replicate (mean ± SD)	Pairwise Jaccard (mean ± SD)	Union genes	Genes in ≥2/4, n (%)	Genes in ≥3/4, n (%)	Genes in 4/4, n (%)	Nelfa	Zfp352	Lmx1a	Cdk2ap1	Snai1	Pou5f1
+ChimeraTE	Primary	695.8 ± 34.9	0.345 ± 0.015	1493	675 (45.2%)	381 (25.5%)	234 (15.7%)	0/4	1/4 [MT2B1]	0/4	1/4 [MT2B2]	0/4	0/4
+FREDY	Primary	664.2 ± 32.6	0.210 ± 0.006	1726	579 (33.5%)	252 (14.6%)	100 (5.8%)	0/4	0/4	1/4 [MT2_Mm]	1/4 [MT2B2]	1/4 [MERVL-int,MT2_Mm]	0/4
+FREDY-adapted	Sensitivity analysis	9301.0 ± 42.4	0.904 ± 0.002	10376	9301 (89.6%)	8892 (85.7%)	8635 (83.2%)	0/4	3/4 [MT2B1]	1/4 [MT2_Mm]	2/4 [MT2B2]	1/4 [MERVL-int,MT2_Mm]	0/4
+TEProf2	Primary	337.0 ± 31.9	0.213 ± 0.018	831	355 (42.7%)	134 (16.1%)	28 (3.4%)	2/4 [MERVL-int,MT2_Mm]	0/4	0/4	3/4 [MT2B2]	1/4 [MT2_Mm]	0/4
+LIONS	Primary	1244.8 ± 135.5	0.328 ± 0.012	2769	1128 (40.7%)	690 (24.9%)	392 (14.2%)	4/4 [MT2_Mm]	4/4 [MT2B1]	2/4 [MERVL-int,MT2_Mm]	2/4 [MT2B2]	1/4 [MT2_Mm]	0/4

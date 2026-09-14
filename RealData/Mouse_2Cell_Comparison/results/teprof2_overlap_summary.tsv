@@ -1,0 +1,2 @@
+final_candidates	final_unique_genes	rep1_supported_candidates	rep2_supported_candidates	rep3_supported_candidates	rep4_supported_candidates	rep1_supported_genes	rep2_supported_genes	rep3_supported_genes	rep4_supported_genes	union_supported_genes	at_least_2_reps	at_least_3_reps	all_4_reps
+999	836	348	344	418	345	329	314	384	321	831	355	134	28

@@ -1,0 +1,3 @@
+category	rep1_events	rep2_events	rep3_events	rep4_events	rep1_genes	rep2_genes	rep3_genes	rep4_genes	union_genes	at_least_2_reps	at_least_3_reps	all_4_reps
+all_TE_initiated	791	818	848	723	702	704	730	647	1493	675	381	234
+MT2_Mm_initiated	66	61	61	55	65	60	61	55	85	66	52	38

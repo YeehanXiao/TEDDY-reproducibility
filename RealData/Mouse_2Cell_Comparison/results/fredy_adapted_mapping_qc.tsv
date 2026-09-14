@@ -1,0 +1,5 @@
+replicate	protein_transcripts	default_initial_transcripts	default_missing	default_structure_changed	gene_mapped_transcripts	ambiguous_transcripts	unresolved_transcripts	transcripts_without_stranded_first_exon	first_exon_TE_transcripts	gene_mapped_first_exon_TE_transcripts	unresolved_or_ambiguous_first_exon_TE_transcripts
+rep1	56546	860	0	0	45534	39	10973	8512	13753	12297	1456
+rep2	57203	841	0	0	45546	41	11616	9289	13788	12342	1446
+rep3	57522	866	0	0	45657	37	11828	9826	13619	12374	1245
+rep4	59082	774	0	0	45362	31	13689	11661	13305	12089	1216

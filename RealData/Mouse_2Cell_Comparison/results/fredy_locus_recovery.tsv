@@ -1,0 +1,43 @@
+gene_name	mapping_scope	definition	n_replicates	replicates	n_transcripts	TE_families
+Nelfa	inclusive	any_TE	3	rep1,rep2,rep4	3	B1_Mus1;ORR1A0
+Nelfa	inclusive	MT2_MERVL_family	0		0	
+Nelfa	inclusive	exact_MT2_Mm	0		0	
+Zfp352	inclusive	any_TE	0		0	
+Zfp352	inclusive	MT2_MERVL_family	0		0	
+Zfp352	inclusive	exact_MT2_Mm	0		0	
+Lmx1a	inclusive	any_TE	1	rep1	1	MT2_Mm
+Lmx1a	inclusive	MT2_MERVL_family	1	rep1	1	MT2_Mm
+Lmx1a	inclusive	exact_MT2_Mm	1	rep1	1	MT2_Mm
+Cdk2ap1	inclusive	any_TE	2	rep2,rep4	3	B1F;B3A;B4A;ID;ID_B1;MT2B2
+Cdk2ap1	inclusive	MT2_MERVL_family	1	rep4	1	B3A;B4A;MT2B2
+Cdk2ap1	inclusive	exact_MT2_Mm	0		0	
+Fam172a	inclusive	any_TE	0		0	
+Fam172a	inclusive	MT2_MERVL_family	0		0	
+Fam172a	inclusive	exact_MT2_Mm	0		0	
+Snai1	inclusive	any_TE	1	rep2	1	L1Md_T;MERVL-int;MT2_Mm;ORR1A3-int
+Snai1	inclusive	MT2_MERVL_family	1	rep2	1	L1Md_T;MERVL-int;MT2_Mm;ORR1A3-int
+Snai1	inclusive	exact_MT2_Mm	1	rep2	1	L1Md_T;MERVL-int;MT2_Mm;ORR1A3-int
+Pou5f1	inclusive	any_TE	0		0	
+Pou5f1	inclusive	MT2_MERVL_family	0		0	
+Pou5f1	inclusive	exact_MT2_Mm	0		0	
+Nelfa	unambiguous	any_TE	3	rep1,rep2,rep4	3	B1_Mus1;ORR1A0
+Nelfa	unambiguous	MT2_MERVL_family	0		0	
+Nelfa	unambiguous	exact_MT2_Mm	0		0	
+Zfp352	unambiguous	any_TE	0		0	
+Zfp352	unambiguous	MT2_MERVL_family	0		0	
+Zfp352	unambiguous	exact_MT2_Mm	0		0	
+Lmx1a	unambiguous	any_TE	1	rep1	1	MT2_Mm
+Lmx1a	unambiguous	MT2_MERVL_family	1	rep1	1	MT2_Mm
+Lmx1a	unambiguous	exact_MT2_Mm	1	rep1	1	MT2_Mm
+Cdk2ap1	unambiguous	any_TE	2	rep2,rep4	3	B1F;B3A;B4A;ID;ID_B1;MT2B2
+Cdk2ap1	unambiguous	MT2_MERVL_family	1	rep4	1	B3A;B4A;MT2B2
+Cdk2ap1	unambiguous	exact_MT2_Mm	0		0	
+Fam172a	unambiguous	any_TE	0		0	
+Fam172a	unambiguous	MT2_MERVL_family	0		0	
+Fam172a	unambiguous	exact_MT2_Mm	0		0	
+Snai1	unambiguous	any_TE	1	rep2	1	L1Md_T;MERVL-int;MT2_Mm;ORR1A3-int
+Snai1	unambiguous	MT2_MERVL_family	1	rep2	1	L1Md_T;MERVL-int;MT2_Mm;ORR1A3-int
+Snai1	unambiguous	exact_MT2_Mm	1	rep2	1	L1Md_T;MERVL-int;MT2_Mm;ORR1A3-int
+Pou5f1	unambiguous	any_TE	0		0	
+Pou5f1	unambiguous	MT2_MERVL_family	0		0	
+Pou5f1	unambiguous	exact_MT2_Mm	0		0	

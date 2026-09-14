@@ -1,0 +1,8 @@
+gene_name	final_candidate	n_candidates	TE_families	rep1_supported	rep1_TE_families	rep2_supported	rep2_TE_families	rep3_supported	rep3_TE_families	rep4_supported	rep4_TE_families	n_replicates
+Nelfa	1	2	MERVL-int;MT2_Mm	1	MERVL-int	1	MERVL-int;MT2_Mm	0		0		2
+Zfp352	0	0		0		0		0		0		0
+Lmx1a	0	0		0		0		0		0		0
+Cdk2ap1	1	1	MT2B2	1	MT2B2	1	MT2B2	1	MT2B2	0		3
+Fam172a	1	2	MERVL-int;MTA_Mm	0		1	MTA_Mm	1	MTA_Mm	1	MERVL-int	3
+Snai1	1	1	MT2_Mm	0		1	MT2_Mm	0		0		1
+Pou5f1	0	0		0		0		0		0		0

@@ -1,0 +1,22 @@
+gene_name	panel	definition	n_replicates	replicates	n_events	TE_families	max_supporting_reads	rep1_present	rep2_present	rep3_present	rep4_present
+Nelfa	study_locus	any_TE	0		0		0	0	0	0	0
+Nelfa	study_locus	MT2_MERVL_family	0		0		0	0	0	0	0
+Nelfa	study_locus	exact_MT2_Mm	0		0		0	0	0	0	0
+Zfp352	established_control	any_TE	1	rep4	1	MT2B1	1	0	0	0	1
+Zfp352	established_control	MT2_MERVL_family	1	rep4	1	MT2B1	1	0	0	0	1
+Zfp352	established_control	exact_MT2_Mm	0		0		0	0	0	0	0
+Lmx1a	study_locus	any_TE	0		0		0	0	0	0	0
+Lmx1a	study_locus	MT2_MERVL_family	0		0		0	0	0	0	0
+Lmx1a	study_locus	exact_MT2_Mm	0		0		0	0	0	0	0
+Cdk2ap1	established_control	any_TE	1	rep4	1	MT2B2	9	0	0	0	1
+Cdk2ap1	established_control	MT2_MERVL_family	1	rep4	1	MT2B2	9	0	0	0	1
+Cdk2ap1	established_control	exact_MT2_Mm	0		0		0	0	0	0	0
+Fam172a	figure_example	any_TE	3	rep1,rep3,rep4	5	MERVL-int;MT2_Mm;ORR1A3-int	2	1	0	1	1
+Fam172a	figure_example	MT2_MERVL_family	3	rep1,rep3,rep4	3	MERVL-int;MT2_Mm	2	1	0	1	1
+Fam172a	figure_example	exact_MT2_Mm	2	rep1,rep3	2	MT2_Mm	2	1	0	1	0
+Snai1	study_locus	any_TE	0		0		0	0	0	0	0
+Snai1	study_locus	MT2_MERVL_family	0		0		0	0	0	0	0
+Snai1	study_locus	exact_MT2_Mm	0		0		0	0	0	0	0
+Pou5f1	study_locus	any_TE	0		0		0	0	0	0	0
+Pou5f1	study_locus	MT2_MERVL_family	0		0		0	0	0	0	0
+Pou5f1	study_locus	exact_MT2_Mm	0		0		0	0	0	0	0
