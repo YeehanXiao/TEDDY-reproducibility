@@ -20,7 +20,7 @@ TARGETS = [
     ("Cdk2ap1", "established_control"),
     ("Fam172a", "figure_example"),
     ("Snai1", "study_locus"),
-    ("Pou5f1", "study_locus"),
+    ("Pou6f2", "study_locus"),
 ]
 
 

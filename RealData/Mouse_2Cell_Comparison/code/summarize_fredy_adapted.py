@@ -11,7 +11,7 @@ from pathlib import Path
 import pandas as pd
 
 REPS = ('rep1', 'rep2', 'rep3', 'rep4')
-LOCI = ('Nelfa', 'Zfp352', 'Lmx1a', 'Cdk2ap1', 'Snai1', 'Pou5f1', 'Fam172a')
+LOCI = ('Nelfa', 'Zfp352', 'Lmx1a', 'Cdk2ap1', 'Snai1', 'Pou6f2', 'Fam172a')
 ATTR = re.compile(r'(\S+)\s+"([^"]*)"')
 
 

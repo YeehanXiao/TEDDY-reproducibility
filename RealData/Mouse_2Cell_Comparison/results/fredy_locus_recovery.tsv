@@ -17,9 +17,9 @@ Fam172a	inclusive	exact_MT2_Mm	0		0
 Snai1	inclusive	any_TE	1	rep2	1	L1Md_T;MERVL-int;MT2_Mm;ORR1A3-int
 Snai1	inclusive	MT2_MERVL_family	1	rep2	1	L1Md_T;MERVL-int;MT2_Mm;ORR1A3-int
 Snai1	inclusive	exact_MT2_Mm	1	rep2	1	L1Md_T;MERVL-int;MT2_Mm;ORR1A3-int
-Pou5f1	inclusive	any_TE	0		0	
-Pou5f1	inclusive	MT2_MERVL_family	0		0	
-Pou5f1	inclusive	exact_MT2_Mm	0		0	
+Pou6f2	inclusive	any_TE	0		0	
+Pou6f2	inclusive	MT2_MERVL_family	0		0	
+Pou6f2	inclusive	exact_MT2_Mm	0		0	
 Nelfa	unambiguous	any_TE	3	rep1,rep2,rep4	3	B1_Mus1;ORR1A0
 Nelfa	unambiguous	MT2_MERVL_family	0		0	
 Nelfa	unambiguous	exact_MT2_Mm	0		0	
@@ -38,6 +38,6 @@ Fam172a	unambiguous	exact_MT2_Mm	0		0
 Snai1	unambiguous	any_TE	1	rep2	1	L1Md_T;MERVL-int;MT2_Mm;ORR1A3-int
 Snai1	unambiguous	MT2_MERVL_family	1	rep2	1	L1Md_T;MERVL-int;MT2_Mm;ORR1A3-int
 Snai1	unambiguous	exact_MT2_Mm	1	rep2	1	L1Md_T;MERVL-int;MT2_Mm;ORR1A3-int
-Pou5f1	unambiguous	any_TE	0		0	
-Pou5f1	unambiguous	MT2_MERVL_family	0		0	
-Pou5f1	unambiguous	exact_MT2_Mm	0		0	
+Pou6f2	unambiguous	any_TE	0		0	
+Pou6f2	unambiguous	MT2_MERVL_family	0		0	
+Pou6f2	unambiguous	exact_MT2_Mm	0		0	

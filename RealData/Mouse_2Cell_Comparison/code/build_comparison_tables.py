@@ -10,8 +10,8 @@ import pandas as pd
 
 
 REPS = tuple(f"rep{i}" for i in range(1, 5))
-MASTER_LOCI = ("Nelfa", "Zfp352", "Lmx1a", "Cdk2ap1", "Snai1", "Pou5f1")
-DISPLAY_LOCI = ("Cdk2ap1", "Zfp352", "Lmx1a", "Snai1", "Nelfa", "Pou5f1")
+MASTER_LOCI = ("Nelfa", "Zfp352", "Lmx1a", "Cdk2ap1", "Snai1", "Pou6f2")
+DISPLAY_LOCI = ("Cdk2ap1", "Zfp352", "Lmx1a", "Snai1", "Nelfa", "Pou6f2")
 
 METHODS = (
     {

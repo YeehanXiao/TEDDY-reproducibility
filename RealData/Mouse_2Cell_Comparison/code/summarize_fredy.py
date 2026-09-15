@@ -11,7 +11,7 @@ REPS = ("rep1", "rep2", "rep3", "rep4")
 SAMPLES = ("2cellrep1", "2cellrep2", "2cellrep3", "2cellrep4")
 TARGETS = (
     "Nelfa", "Zfp352", "Lmx1a", "Cdk2ap1",
-    "Fam172a", "Snai1", "Pou5f1",
+    "Fam172a", "Snai1", "Pou6f2",
 )
 ATTR = re.compile(r'(\S+)\s+"([^"]*)"')
 

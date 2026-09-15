@@ -17,7 +17,7 @@ TARGETS = (
     "Cdk2ap1",
     "Fam172a",
     "Snai1",
-    "Pou5f1",
+    "Pou6f2",
 )
 
 

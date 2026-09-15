@@ -17,6 +17,6 @@ Fam172a	figure_example	exact_MT2_Mm	2	rep1,rep3	2	MT2_Mm	2	1	0	1	0
 Snai1	study_locus	any_TE	0		0		0	0	0	0	0
 Snai1	study_locus	MT2_MERVL_family	0		0		0	0	0	0	0
 Snai1	study_locus	exact_MT2_Mm	0		0		0	0	0	0	0
-Pou5f1	study_locus	any_TE	0		0		0	0	0	0	0
-Pou5f1	study_locus	MT2_MERVL_family	0		0		0	0	0	0	0
-Pou5f1	study_locus	exact_MT2_Mm	0		0		0	0	0	0	0
+Pou6f2	study_locus	any_TE	0		0		0	0	0	0	0
+Pou6f2	study_locus	MT2_MERVL_family	0		0		0	0	0	0	0
+Pou6f2	study_locus	exact_MT2_Mm	0		0		0	0	0	0	0

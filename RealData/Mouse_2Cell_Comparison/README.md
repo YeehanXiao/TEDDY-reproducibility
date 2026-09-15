@@ -50,10 +50,13 @@ methods.
   retained as the inputs to the final tables.
 
 The six-locus panel contains four loci characterized in this study (`Nelfa`,
-`Lmx1a`, `Snai1`, and `Pou5f1`) and two established controls (`Zfp352` and
+`Lmx1a`, `Snai1`, and `Pou6f2`) and two established controls (`Zfp352` and
 `Cdk2ap1`). Tool-specific diagnostic tables also retain `Fam172a`, which is not
 part of the cross-method panel. Locus recovery requires an MT2/MERVL-compatible
 call and is reported as the number of supported replicates out of four.
+`Pou6f2` was resolved as GENCODE vM25 gene `ENSMUSG00000009734`; neither
+ChimeraTE nor unambiguously mapped FREDY calls recovered an MT2/MERVL-compatible
+event for this gene in any replicate.
 
 Rebuild the three final tables after regenerating the tool-specific summaries:
 
