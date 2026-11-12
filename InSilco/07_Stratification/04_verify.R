@@ -48,4 +48,15 @@ archived[, depth := as.character(depth)]
 compare_table(recovery, archived, c("seed", "depth"), "Fig2A recovery")
 stopifnot(nrow(recovery) == 50L, setequal(recovery$seed, c(18L, 101:109)),
           setequal(recovery$depth, c("5x", "10x", "25x", "50x", "100x")))
-message("Verified both frozen stratification tables, all 200 Fig2A denominator/rate pairs, and count conservation.")
+sensitivity <- fread(file.path(results, "TEDDY_bp_threshold_sensitivity.tsv"))
+compare_table(sensitivity, fread(file.path(reference, "TEDDY_bp_threshold_sensitivity.tsv")),
+              c("analysis", "setting", "depth"), "Threshold sensitivity")
+stopifnot(nrow(sensitivity) == 45L, all(sensitivity$n_seeds == 10L),
+          all(sensitivity$N_truth_mean > 0), all(sensitivity$N_pred_mean >= 0),
+          all(sensitivity$TP_mean >= 0),
+          all(sensitivity$TP_mean <= sensitivity$N_truth_mean),
+          all(sensitivity$TP_mean <= sensitivity$N_pred_mean),
+          all(sensitivity$precision >= 0 & sensitivity$precision <= 1),
+          all(sensitivity$recall >= 0 & sensitivity$recall <= 1),
+          all(sensitivity[, uniqueN(N_truth_mean), by = depth]$V1 == 1L))
+message("Verified both stratification tables, 200 Fig2A denominator/rate pairs, 45 threshold rows, and count conservation.")

@@ -14,6 +14,7 @@ to replay these retained annotations.
 Rscript -e 'install.packages(c("data.table", "ggplot2", "patchwork"), repos="https://cloud.r-project.org")'
 cd InSilco/07_Stratification
 Rscript 01_score_stratification.R
+Rscript 05_score_threshold_sensitivity.R
 Rscript 04_verify.R
 Rscript 02_plot_fig2a.R
 Rscript 03_plot_stratification.R
@@ -25,6 +26,7 @@ To use another output directory, supply these positional arguments:
 
 ```sh
 Rscript 01_score_stratification.R inputs/structural_annotations.rds results
+Rscript 05_score_threshold_sensitivity.R inputs/structural_annotations.rds results
 Rscript 04_verify.R results inputs/reference
 Rscript 02_plot_fig2a.R results/TE_structural_recovery_10seeds.tsv results
 Rscript 03_plot_stratification.R results/stratified_performance.tsv results
@@ -38,11 +40,13 @@ Rscript 03_plot_stratification.R results/stratified_performance.tsv results
 | `inputs/reference/stratified_performance.tsv` | Frozen 3,640-row gene/locus result table |
 | `inputs/reference/structural_stratified_performance.tsv` | Frozen 5,850-row structural result table |
 | `inputs/reference/TE_structural_recovery_10seeds.rds` | Archived 50-row recovery object with all four historical metrics |
+| `inputs/reference/TEDDY_bp_threshold_sensitivity.tsv` | Frozen 45-row overlap and boundary-tolerance sensitivity table |
 | `inputs/reference/03_plot_TE_structural_recovery_10seeds.R` | Archived four-panel plot source; trailing whitespace removed |
 | `01_score_stratification.R` | Recompute the two complete tables and `TE_structural_recovery_10seeds.tsv` |
 | `02_plot_fig2a.R` | Plot locus, category and context-aware relative-position recovery |
 | `03_plot_stratification.R` | Plot locus recall by overlap, exon fraction and TE incorporation fraction |
-| `04_verify.R` | Check every frozen table field, Fig2A denominators/rates and count conservation |
+| `04_verify.R` | Check every frozen table field, Fig2A denominators/rates, threshold sensitivity and count conservation |
+| `05_score_threshold_sensitivity.R` | Recompute overlap-threshold and additional exon-boundary matching sensitivity |
 
 ## Definitions
 
@@ -89,6 +93,22 @@ The three-panel plotting script recreates the manuscript layout from the
 archived four-panel source; it is not the lost original layout-edit script.
 Grey points are individual seeds; red curves show mean +/- sample SD.
 
+## Threshold sensitivity
+
+Run `05_score_threshold_sensitivity.R` after `01_score_stratification.R`.
+It reads the same retained exon coordinates and checks its baseline against
+all 50 seed/depth locus results before writing
+`results/TEDDY_bp_threshold_sensitivity.tsv`.
+
+Minimum-overlap sensitivity filters predicted exon-TE associations at 5, 10,
+20 and 50 bp while retaining the original truth denominator. Additional
+boundary matching requires both predicted exon endpoints to match a truth
+exon for the same host gene and exact TE locus within 0, 5, 10 or 25 bp.
+This extra matching requirement is separate from the original 5-bp tolerance
+used to annotate structural labels, which remains unchanged. Each table row
+reports equal-weight means and sample SD across all ten seeds, with changes
+in percentage points relative to its baseline.
+
 ## Provenance and validation
 
 The portable annotation input was extracted from the retained annotation
@@ -100,7 +120,10 @@ The compact scorer preserves the original scoring and aggregation rules.
 Validated with R 4.5.1, data.table 1.18.4, ggplot2 4.0.3 and patchwork 1.3.2.
 Verification compares all keys, fields and NA positions in all 3,640 and
 5,850 frozen rows, plus 50 seed/depth rows containing four denominator/rate
-pairs each. Numerical tolerance is 1e-12. TP + FN = N_truth and
+pairs each and all 45 threshold-sensitivity rows. The threshold scorer
+retains the calculation functions from `reproduce_figure_revision.R`
+(2026-11-06); its output matches the retained TSV byte for byte.
+Numerical tolerance is 1e-12. TP + FN = N_truth and
 pred_TP + FP = N_pred are also checked.
 
 This is a replay from stored annotations. It does not run simulation,
