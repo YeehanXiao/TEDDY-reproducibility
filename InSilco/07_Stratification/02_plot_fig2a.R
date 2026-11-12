@@ -13,7 +13,7 @@ depths <- c("5x", "10x", "25x", "50x", "100x")
 
 # Recreate the manuscript's three-panel layout from the archived four-metric
 # source. Its relative-position panel uses TE_boundary, including exon context.
-metrics <- c(TE_locus = "TE-chimeric locus", TE_category = "Chimeric category",
+metrics <- c(TE_locus = "TE-chimeric locus", TE_category = "TE-chimeric category",
              TE_boundary = "Relative TE position")
 recovery <- fread(input)
 stopifnot(nrow(recovery) == 50L, !anyDuplicated(recovery[, .(seed, depth)]),

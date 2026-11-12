@@ -79,7 +79,7 @@ the original benchmark seed separately.
 | Manuscript panel | Archived field |
 | --- | --- |
 | TE-chimeric locus | `TE_locus` |
-| Chimeric category | `TE_category` |
+| TE-chimeric category | `TE_category` |
 | Relative TE position | `TE_boundary` |
 
 The manuscript's relative-position panel incorporates exon-chain context,
@@ -104,6 +104,7 @@ pairs each. Numerical tolerance is 1e-12. TP + FN = N_truth and
 pred_TP + FP = N_pred are also checked.
 
 This is a replay from stored annotations. It does not run simulation,
-alignment, assembly, annotation or callers. The upstream benchmark pipeline
-is retained elsewhere in `InSilco/`; historical seed-replicate runner source
-is being recovered separately and is not represented by this replay module.
+alignment, assembly, annotation or callers. Final independent-seed gene-level
+scoring sources and retained LIONS calls are in
+[`../03_Metrics_Evaluation/nine_seed/`](../03_Metrics_Evaluation/nine_seed/).
+The original simulation-generation runner for seed replicates is not included.
