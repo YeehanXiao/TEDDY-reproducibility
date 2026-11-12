@@ -8,6 +8,9 @@ Software DOI: https://doi.org/10.5281/zenodo.21302347
 ## Contents
 
 - `InSilco/`: simulated-data accuracy, sensitivity, and runtime benchmarks.
+- [`InSilco/07_Stratification/`](InSilco/07_Stratification/): ten-seed TEDDY
+  contribution stratification and the three-panel Figure 2A, with portable
+  annotations and verification against archived results.
 - `RealData/Mouse_2Cell_Comparison/`: four-replicate mouse 2-cell comparison
   of external TE-initiated-transcript callers.
 - `CrossPlatform/`: annotation-version, platform, and cell-line analyses.
